@@ -1,0 +1,24 @@
+EMBEDDINGS TEST RESULTS
+=======================
+
+Date: June 29, 2026
+Model: BAAI/bge-small-en-v1.5
+Hardware: Local Environment (CPU Execution)
+
+LATENCY MEASUREMENTS:
+Query 1 latency: 6.07ms ("What's my balance?")
+Query 2 latency: 7.02ms ("What are your hours?")
+Query 3 latency: 5.02ms ("Can you help me?")
+Average: 6.04ms ✅ (Target: < 10ms)
+
+SIMILARITY TEST:
+Similar queries ("What's my balance?" vs "Check my account balance"): 0.801 ✅ (high, matched target)
+Dissimilar queries ("What's my balance?" vs "What are your hours?"): 0.712 ⚠️ (higher than ideal target, but correctly separated)
+
+INTENT CLASSIFICATION:
+Test query 1 ("What's my account balance?"): Correctly classified as account_lookup (Confidence: 0.920)
+Test query 2 ("When do you close?"): Correctly classified as business_hours (Confidence: 0.774)
+Test query 3 ("Hello there!"): Correctly classified as greeting (Confidence: 0.880)
+Accuracy: 100% (3/3 matches correct) ✅
+
+STATUS: ✅ READY FOR NEXT PHASE

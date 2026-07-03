@@ -19,7 +19,8 @@ st.set_page_config(
 )
 
 # API Base URL
-API_BASE_URL = "http://localhost:8000"
+import os
+API_BASE_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
 # ==================== SIDEBAR ====================
 
@@ -218,8 +219,8 @@ elif page == "❓ Query":
         else:
             st.warning("Please enter a query")
 
-# ==================== PAGE: DOCUMENTS ====================
 
+# ==================== PAGE: DOCUMENTS ====================
 elif page == "📄 Documents":
     st.title("📄 Document Management")
     
@@ -227,13 +228,51 @@ elif page == "📄 Documents":
     
     with col1:
         st.subheader("📤 Upload Document")
-        uploaded_file = st.file_uploader("Choose a file (PDF or TXT)", type=["pdf", "txt"])
+        uploaded_file = st.file_uploader(
+            "Choose a file (PDF or TXT)", 
+            type=["pdf", "txt"],
+            help="Upload company policies, guides, FAQs, etc."
+        )
         
-        if uploaded_file and st.button("Upload"):
-            with st.spinner("Uploading..."):
-                files = {"file": (uploaded_file.name, uploaded_file.getbuffer())}
-                # Note: This would need form-data support in the API
-                st.success("✅ Document uploaded successfully")
+        if uploaded_file:
+            st.info(f"📄 Selected: {uploaded_file.name} ({uploaded_file.size / 1024:.1f}KB)")
+            
+            if st.button("📤 Upload to RAG", use_container_width=True):
+                with st.spinner(f"Uploading {uploaded_file.name}..."):
+                    try:
+                        # Save file temporarily
+                        import tempfile
+                        import os
+                        
+                        # Create temp directory
+                        temp_dir = "temp_uploads"
+                        os.makedirs(temp_dir, exist_ok=True)
+                        
+                        # Save uploaded file
+                        temp_path = os.path.join(temp_dir, uploaded_file.name)
+                        with open(temp_path, "wb") as f:
+                            f.write(uploaded_file.getbuffer())
+                        
+                        # Send to API
+                        response = requests.post(
+                            f"{API_BASE_URL}/documents/upload",
+                            files={"file": open(temp_path, "rb")}
+                        )
+                        
+                        if response.status_code == 200:
+                            result = response.json()
+                            st.success(
+                                f"✅ {result['filename']} uploaded successfully!\n\n"
+                                f"Chunks created: {result['chunks']}"
+                            )
+                        else:
+                            st.error(f"❌ Upload failed: {response.text}")
+                        
+                        # Clean up
+                        os.remove(temp_path)
+                    
+                    except Exception as e:
+                        st.error(f"❌ Error: {str(e)}")
     
     with col2:
         st.subheader("📚 Loaded Documents")
@@ -241,18 +280,40 @@ elif page == "📄 Documents":
         docs_response, error = make_api_call("/documents")
         
         if error:
-            st.error(f"Error: {error}")
+            st.error(f"❌ Error: {error}")
         elif docs_response:
             docs = docs_response["documents"]["documents"]
             
             if docs:
                 for doc in docs:
-                    st.info(
-                        f"**{doc['filename']}**\n\n"
+                    st.success(
+                        f"✅ **{doc['filename']}**\n\n"
                         f"Chunks: {doc['chunks']} | Size: {doc['size']} characters"
                     )
             else:
-                st.warning("No documents loaded yet")
+                st.warning("⚠️ No documents loaded yet. Upload one to get started!")
+    
+    # Show instructions
+    st.markdown("""
+    ---
+    ### 📖 How to Use:
+    
+    1. **Upload your document** (PDF or TXT)
+    2. **System will automatically:**
+       - Extract text from document
+       - Split into chunks (500 chars each)
+       - Create semantic embeddings
+       - Store for retrieval
+    
+    3. **Then ask questions** in the Query tab about your documents
+    
+    ### 📝 Recommended Documents:
+    - Company policies and handbooks
+    - Product documentation
+    - Training materials
+    - FAQ documents
+    - Procedure guides
+    """)
 
 # ==================== PAGE: CACHE ====================
 

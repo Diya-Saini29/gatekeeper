@@ -6,6 +6,7 @@ from backend.rag_answerer import RAGAnswerer
 from backend.semantic_cache import SemanticCache
 from backend.quality_verifier import QualityVerifier
 from backend.cost_tracker import CostTracker
+from backend.cost_tracker import QueryCost
 import time
 
 

@@ -1,0 +1,23 @@
+
+EMPLOYEE BENEFITS
+
+Health Insurance:
+- Medical: 90% covered by company
+- Dental: 50% covered by company  
+- Vision: 50% covered by company
+- Dependents: Available at employee cost
+
+401(k) Retirement Plan:
+- Company matches up to 6% of salary
+- Immediate eligibility
+- Investment options: 20+ funds
+
+Life Insurance:
+- 2x annual salary (company paid)
+- Optional additional coverage available
+- Beneficiary: Configurable
+
+Wellness Program:
+- Gym membership: $50/month reimbursement
+- Mental health: 6 free counseling sessions/year
+- Wellness checks: Annual health screening

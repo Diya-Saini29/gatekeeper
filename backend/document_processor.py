@@ -7,7 +7,7 @@ import json
 from typing import List, Dict, Tuple
 from pathlib import Path
 import PyPDF2
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
 class Document:
@@ -29,10 +29,10 @@ class DocumentProcessor:
     """Process documents for RAG"""
     
     def __init__(self):
-        # Chunking strategy
+        # Chunking strategy - IMPROVED
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500,      # Reasonable chunk size
-            chunk_overlap=100,   # Overlap for context
+            chunk_size=1000,      # ⬆️ Larger chunks (was 500)
+            chunk_overlap=200,    # ⬆️ More overlap (was 100)
             separators=["\n\n", "\n", ".", " ", ""]
         )
     

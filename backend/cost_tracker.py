@@ -69,7 +69,7 @@ class CostTracker:
         return {
             "total_queries": len(self.queries),
             "total_cost": total_cost,
-            "avg_latency_ms": avg_latency,
+            "avg_latency_ms": avg_latency if self.queries else 0.0,
             "route_breakdown": route_breakdown,
             "standard_rag_cost": standard_cost,
             "optimized_cost": total_cost,

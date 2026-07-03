@@ -91,36 +91,63 @@ async def upload_document(file: UploadFile = File(...)):
     Supported formats: PDF, TXT
     """
     try:
-        # Save file temporarily
-        temp_path = f"temp_{file.filename}"
-        with open(temp_path, "wb") as f:
-            content = await file.read()
-            f.write(content)
-        
-        # Add to RAG
-        result = answerer.add_documents([temp_path])
-        
-        if result["errors"]:
-            raise HTTPException(status_code=400, detail=result["errors"][0])
-        
-        # Track uploaded file
-        uploaded_files.append(temp_path)
-        
-        doc_info = result["added"][0]
-        
-        return DocumentUploadResponse(
-            status="success",
-            filename=doc_info["filename"],
-            chunks=doc_info["chunks"],
-            message=f"Document uploaded successfully with {doc_info['chunks']} chunks"
-        )
+        # Validate file type
+        if file.filename.lower().endswith(('.pdf', '.txt')):
+            # Save file temporarily
+            import os
+            import tempfile
+            
+            temp_dir = "temp_uploads"
+            os.makedirs(temp_dir, exist_ok=True)
+            
+            temp_path = os.path.join(temp_dir, file.filename)
+            
+            # Write file
+            with open(temp_path, "wb") as f:
+                content = await file.read()
+                f.write(content)
+            
+            # Add to RAG
+            result = answerer.add_documents([temp_path])
+            
+            if result["errors"]:
+                return JSONResponse(
+                    status_code=400,
+                    content={
+                        "status": "error",
+                        "filename": file.filename,
+                        "chunks": 0,
+                        "message": f"Error: {result['errors'][0]['error']}"
+                    }
+                )
+            
+            # Track uploaded file
+            uploaded_files.append(temp_path)
+            
+            doc_info = result["added"][0]
+            
+            return {
+                "status": "success",
+                "filename": doc_info["filename"],
+                "chunks": doc_info["chunks"],
+                "message": f"Document uploaded successfully with {doc_info['chunks']} chunks"
+            }
+        else:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "status": "error",
+                    "message": "Only PDF and TXT files are supported"
+                }
+            )
     
     except Exception as e:
-        return DocumentUploadResponse(
-            status="error",
-            filename=file.filename,
-            chunks=0,
-            message=str(e)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "error",
+                "message": f"Upload failed: {str(e)}"
+            }
         )
 
 @app.get("/documents")
@@ -268,4 +295,14 @@ async def clear_cache():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    
+    # Load from .env or use defaults
+    import os
+    from dotenv import load_dotenv
+    
+    load_dotenv()
+    
+    host = os.getenv("API_HOST", "127.0.0.1")  # Default to localhost
+    port = int(os.getenv("API_PORT", "8000"))
+    
+    uvicorn.run(app, host=host, port=port)

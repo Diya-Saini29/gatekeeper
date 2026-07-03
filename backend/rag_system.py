@@ -54,13 +54,13 @@ class RAGSystem:
                 "embedding": embedding
             }
     
-    def retrieve(self, query: str, top_k: int = 3) -> List[Dict]:
+    def retrieve(self, query: str, top_k: int = 10) -> List[Dict]:
         """
-        Retrieve top-k most relevant chunks
+        Retrieve top-k most relevant chunks with better filtering
         
         Args:
             query: User query
-            top_k: Number of results to return
+            top_k: Number of results to return (default 10 for more candidates)
         
         Returns:
             List of relevant chunks with sources
@@ -75,12 +75,15 @@ class RAGSystem:
                 query_embedding,
                 data["embedding"]
             )
-            scores.append({
-                "chunk_id": chunk_id,
-                "filename": data["filename"],
-                "chunk": data["chunk"],
-                "similarity": similarity
-            })
+            
+            # Lower threshold to get more candidates (was 0.3, now 0.25)
+            if similarity > 0.25:
+                scores.append({
+                    "chunk_id": chunk_id,
+                    "filename": data["filename"],
+                    "chunk": data["chunk"],
+                    "similarity": similarity
+                })
         
         # Sort by similarity and return top-k
         scores.sort(key=lambda x: x["similarity"], reverse=True)

@@ -1,0 +1,25 @@
+{
+  "total_queries": 11,
+  "latency": {
+    "standard_avg_ms": 2000.0,
+    "gatekeeper_avg_ms": 15.17575437372381,
+    "improvement_ratio": 131.78916518726194
+  },
+  "cost": {
+    "standard_total": 0.011000000000000003,
+    "gatekeeper_total": 0.0062,
+    "savings_usd": 0.004800000000000003,
+    "savings_percent": 43.636363636363654
+  },
+  "routing": {
+    "breakdown": {
+      "rag_with_full_reasoning": 6,
+      "cache_hit": 3,
+      "rag_with_reasoning": 2
+    },
+    "total_free_queries": 3
+  },
+  "quality": {
+    "average_score": 0.809090909090909
+  }
+}

@@ -231,7 +231,9 @@ async def process_query(request: QueryRequest):
         cache.put(request.query, response)
         
         # Step 7: Track cost
+        # Step 7: Track cost
         latency_ms = (time.time() - start_time) * 1000
+        llm_cost = response.get("cost_usd", 0.0)
         tracker.track(request.query, response["routing"], latency_ms)
         
         # Step 8: Return response

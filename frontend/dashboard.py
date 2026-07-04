@@ -54,7 +54,6 @@ def make_api_call(endpoint: str, method: str = "GET", data: dict = None):
 def format_currency(value):
     """Format value as currency"""
     return f"${value:.6f}"
-
 # ==================== PAGE: DASHBOARD ====================
 
 if page == "📊 Dashboard":
@@ -81,7 +80,7 @@ if page == "📊 Dashboard":
         with col2:
             st.metric(
                 "Total Cost",
-                format_currency(data["total_cost"]),
+                format_currency(data["optimized_cost"]),
                 delta="USD spent"
             )
         
@@ -96,8 +95,35 @@ if page == "📊 Dashboard":
             st.metric(
                 "Savings",
                 f"{data['savings_percent']:.1f}%",
-                delta="vs standard RAG",
+                delta="vs full LLM",
                 delta_color="inverse"
+            )
+        
+        # LLM Usage
+        st.subheader("🤖 LLM Usage Breakdown")
+        
+        llm_data = data["llm_breakdown"]
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric(
+                "LLM Used",
+                f"{llm_data['llm_used_count']} queries",
+                f"{llm_data['llm_percentage']:.1f}%"
+            )
+        
+        with col2:
+            st.metric(
+                "LLM Total Cost",
+                format_currency(llm_data["total_llm_cost"]),
+                delta="LLM calls only"
+            )
+        
+        with col3:
+            st.metric(
+                "Avg LLM Cost",
+                format_currency(llm_data["avg_llm_cost_per_query"]),
+                delta="per LLM query"
             )
         
         # Charts
@@ -109,7 +135,6 @@ if page == "📊 Dashboard":
             costs = [route_data[r]["cost"] for r in routes]
             percentages = [route_data[r]["percentage"] for r in routes]
             
-            # Pie chart
             fig = go.Figure(data=[go.Pie(
                 labels=routes,
                 values=percentages,
@@ -118,7 +143,7 @@ if page == "📊 Dashboard":
             fig.update_layout(height=400)
             st.plotly_chart(fig, use_container_width=True)
         
-        # Savings visualization
+        # Cost Comparison
         st.subheader("💰 Cost Optimization Impact")
         
         col1, col2 = st.columns(2)
@@ -126,8 +151,8 @@ if page == "📊 Dashboard":
         with col1:
             fig = go.Figure(data=[
                 go.Bar(
-                    x=["Standard RAG", "Gatekeeper"],
-                    y=[data["standard_rag_cost"], data["optimized_cost"]],
+                    x=["Full LLM", "Gatekeeper"],
+                    y=[data["full_llm_cost"], data["optimized_cost"]],
                     marker_color=["red", "green"]
                 )
             ])
@@ -148,9 +173,11 @@ if page == "📊 Dashboard":
             
             st.info(
                 f"✅ **{data['savings_percent']:.1f}%** cost reduction achieved!\n\n"
+                f"Hybrid approach:\n"
+                f"- {100-llm_data['llm_percentage']:.1f}% extraction (free)\n"
+                f"- {llm_data['llm_percentage']:.1f}% LLM synthesis (smart)\n\n"
                 f"At scale (10k queries/day): **${data['savings_usd'] * 500:.2f}** saved daily"
             )
-
 # ==================== PAGE: QUERY ====================
 
 elif page == "❓ Query":
